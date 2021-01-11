@@ -5,3 +5,5 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 
 from .user import UserModel, UserSchema
+from .custom import CustomModel, CustomSchema
+from .crime import CrimeModel, CrimeSchema

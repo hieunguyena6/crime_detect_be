@@ -60,10 +60,10 @@ def login():
     return error_response("E106", 200)
   
   user = UserModel.get_user_by_user_name(data.get('user_name'))
-  print(user)
   if not user or not user.check_hash(data.get('password')):
     return error_response("E107", 200)
-  
+  if user.is_disable:
+    return error_response("E111", 200)
   ser_data = user_schema.dump(user)
   token = Auth.create_jwt(ser_data.get('id'))
   ser_data.pop("password", None)
@@ -72,12 +72,30 @@ def login():
 @user_api.route('/', methods=['GET'])
 @Auth.jwt_required
 def get_all():
-  page = int(request.args.get('page')) or 1
-  size = int(request.args.get('size')) or 5
-  users_pagination = UserModel.get_all_users(page, size)
+  page = request.args.get('page') or 1
+  size = request.args.get('size') or 5
+  search = request.args.get('s') or ''
+  users_pagination = UserModel.get_all_users(int(page), int(size), search)
   ser_users = user_schema.dump(users_pagination.items, many=True)
   return custom_response({
     "data" : ser_users,
     "total": users_pagination.total
   })
 
+@user_api.route('/<user_id>', methods=['PUT'])
+@Auth.jwt_required
+def change_profile(user_id):
+  try:
+    user_in_db = UserModel.get_one_user(user_id)
+    user = g.user
+    data = request.get_json()
+    if (user.id != user_in_db.id and user.role != "admin"):
+      return error_response("E109")
+    if (not data):
+      return error_response("E110")
+    user_in_db.update(data)
+    return custom_response({
+      "data": "success"
+    })
+  except Exception as e:
+    return error_response(str(e))

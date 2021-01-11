@@ -17,8 +17,9 @@ class UserModel(db.Model):
   email = db.Column(db.String(128), unique=True, nullable=True)
   organize = db.Column(db.String(128), nullable=False)
   password = db.Column(db.String(128), nullable=False)
-  created_at = db.Column(db.DateTime)
-  modified_at = db.Column(db.DateTime)
+  is_disable = db.Column(db.Boolean, default=False, nullable=False)
+  created_at = db.Column(db.DateTime, default=datetime.datetime.now())
+  modified_at = db.Column(db.DateTime, default=datetime.datetime.now())
 
   # class constructor
   def __init__(self, data):
@@ -31,6 +32,7 @@ class UserModel(db.Model):
     self.name = data.get('name')
     self.organize = data.get('organize')
     self.role = data.get('role')
+    self.is_disable = data.get('is_disable')
     self.created_at = datetime.datetime.now()
     self.modified_at = datetime.datetime.now()
 
@@ -46,8 +48,12 @@ class UserModel(db.Model):
     db.session.commit()
 
   def update(self, data):
+    print(data)
     for key, item in data.items():
-      setattr(self, key, item)
+      if key == "password":
+        setattr(self, key, self.__generate_hash(item))
+      else:
+        setattr(self, key, item)
     self.modified_at = datetime.datetime.now()
     db.session.commit()
 
@@ -56,8 +62,8 @@ class UserModel(db.Model):
     db.session.commit()
 
   @staticmethod
-  def get_all_users(page, size):
-    return db.session.query(*[c for c in UserModel.__table__.c if c.name != 'password']).paginate(page, size, False)
+  def get_all_users(page, size, search = ''):
+    return db.session.query(*[c for c in UserModel.__table__.c if c.name != 'password']).filter(UserModel.email.ilike(f'%{search}%') | UserModel.user_name.ilike(f'%{search}%') | UserModel.name.ilike(f'%{search}%') ).order_by(UserModel.email.asc()).paginate(page, size, False)
 
   @staticmethod
   def get_one_user(id):
@@ -84,5 +90,6 @@ class UserSchema(Schema):
   password = fields.Str(required=True)
   role = fields.Str(required=True)
   organize = fields.Str(required=True)
+  is_disable = fields.Bool()
   created_at = fields.DateTime(dump_only=True)
   modified_at = fields.DateTime(dump_only=True)
