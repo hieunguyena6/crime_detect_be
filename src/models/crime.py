@@ -3,6 +3,7 @@ import datetime
 from . import db, bcrypt
 from ..shared.ultils import *
 import json
+import numpy as np
 
 class CrimeModel(db.Model):
   __tablename__ = 'crimes'
@@ -14,6 +15,7 @@ class CrimeModel(db.Model):
   face_image = db.Column(db.String(1500000), nullable=False)
   face_embedding = db.Column(db.String(12000), nullable=False)
   is_wanted = db.Column(db.Boolean, nullable=False, default=True)
+  logs = db.relationship("LogModel", backref="crime", lazy='dynamic')
   created_at = db.Column(db.DateTime, default=datetime.datetime.now())
   modified_at = db.Column(db.DateTime, default=datetime.datetime.now())
 
@@ -51,12 +53,17 @@ class CrimeModel(db.Model):
     db.session.delete(self)
     db.session.commit()
 
+  def get_face_embedding(self):
+    return np.array(json.loads(self.face_embedding))
+
   @staticmethod
   def get_all_crime(page, size, search = ''):
     return CrimeModel.query.filter(CrimeModel.name.ilike(f'%{search}%')).order_by(CrimeModel.id.desc()).paginate(page, size, False)
 
   @staticmethod
-  def get_all_wanted_crime(page, size, search = ''):
+  def get_all_wanted_crime(page = None, size = None, search = ''):
+    if (not page or not size):
+      return CrimeModel.query.filter(CrimeModel.name.ilike(f'%{search}%') & CrimeModel.is_wanted == True).order_by(CrimeModel.id.desc())
     return CrimeModel.query.filter(CrimeModel.name.ilike(f'%{search}%') & CrimeModel.is_wanted == True).order_by(CrimeModel.id.desc()).paginate(page, size, False)
 
   @staticmethod

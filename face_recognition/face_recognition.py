@@ -135,11 +135,6 @@ class Encoder:
 def distance(embedding, embeddings_to_compare, distance_metric=0):
     if len(embeddings_to_compare.shape) == 1:
         embeddings_to_compare = np.array([embeddings_to_compare])
-    print(embedding)
-    print(embeddings_to_compare)
     diff = np.subtract(embedding, embeddings_to_compare)
-    print(np.linalg.norm(diff, axis=1))
-    print("*****88")
     dist = np.sum(np.square(diff), 1) 
-    print(np.sqrt(dist))
     return dist

@@ -14,5 +14,9 @@ error_code = {
   "E112": "Missing field adrress",
   "E113": "Missing field id_number",
   "E114": "Missing field image",
+  "E115": "Missing field real_image",
+  "E116": "Face not found in image",
+  "E117": "Missing field percent",
+  "E118": "Missing field crime_id",
   "E404": "Not found"
 }

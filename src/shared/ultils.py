@@ -9,12 +9,7 @@ face_encoder = fr.Encoder()
 
 def compute_similar(embedding1, embedding2):
     distance = fr.distance(embedding1, embedding2)
-    print(distance**4)
-    print(distance)
-    print(distance**4 + 1)
-    print(1/(distance**4+1))
-    print('--------------------------------------------')
-    return float(1/(distance**5+1))
+    return float(1/(distance**4+1))
 
 def decode_image_base64(image_base64):
     try:

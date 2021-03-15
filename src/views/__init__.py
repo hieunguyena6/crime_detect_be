@@ -28,3 +28,4 @@ def custom_response(res, success= True, status_code = 200):
 from .UserView import user_api
 from .CustomView import custom_api
 from .CrimeView import crime_api
+from .SettingView import setting_api

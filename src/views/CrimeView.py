@@ -1,11 +1,14 @@
 from flask import request, json,  Blueprint,g
 from . import custom_response, error_response
-from ..models import CrimeModel, CrimeSchema
+from ..models import CrimeModel, CrimeSchema, SettingModel, LogModel, LogSchema
 from ..shared.Authentication import Auth
 from functools import wraps
+from ..shared.ultils import *
+from datetime import datetime
 
 crime_api = Blueprint('crimes', __name__)
 crime_schema = CrimeSchema()
+log_schema = LogSchema()
 
 @crime_api.route('/', methods=['POST'])
 @Auth.admin_required
@@ -20,7 +23,6 @@ def create():
     return error_response("E113")
   if (not("image" in req_data)):
     return error_response("E114")      
-  data = crime_schema.load(req_data)
 
   try:
     data = crime_schema.load(req_data)
@@ -57,7 +59,6 @@ def get_crime(crime_id):
     if (not crime):
       return error_response("E404", 404)
     data = crime_schema.dump(crime)
-    print(data)
     return custom_response({
       "data": data
     })
@@ -76,3 +77,57 @@ def delete_crime(crime_id):
   except Exception as e:
     return error_response(str(e))
 
+
+@crime_api.route('/check', methods=['POST'])
+@Auth.admin_required
+def check():
+  req_data = request.get_json() or {}
+  if not("real_image" in req_data):
+    return error_response("E115")
+  image = req_data["real_image"]
+  try:
+    real_image = decode_image_base64(image)
+  except Exception as e:
+    return error_response(str(e))
+  try:
+    real_face = face_detector.find_faces(real_image)[0]
+  except Exception as e:
+    return error_response("E116")
+  real_face_embedding = face_encoder.generate_embedding(real_face)
+  threshold = (SettingModel.getSetting().percent)/100 or 0.5 # CHANGE HERE ( SETTING FROM DB )
+  crimes = CrimeModel.get_all_wanted_crime()
+  similar_list = []
+  for crime in crimes:
+    similar_percent = compute_similar(
+      real_face_embedding,
+      crime.get_face_embedding()
+    )
+    if similar_percent > threshold:
+      similar_list.append({
+        'id': crime.id,
+        'real_face': encode_image_base64(real_face),
+        'face_image': crime.face_image,
+        'name': crime.name,
+        'percent': similar_percent
+      })
+      new_log = {
+        'percent': similar_percent,
+        'crime_id': crime.id,
+        'time': datetime.now(),
+        'image': image,
+        'face_image': encode_image_base64(real_face),
+        'custom_id': 1
+      }
+      try:
+        print(new_log)
+        # new_log = log_schema.load(new_log)
+        new_log = LogModel(new_log)
+        new_log.save()
+      except Exception as e:
+        print(e)
+        return error_response(str(e))
+  similar_list.sort(key=lambda item:item['percent'], reverse=True)
+  similar_list = similar_list[:10]
+  return custom_response({
+    "data": similar_list
+  })

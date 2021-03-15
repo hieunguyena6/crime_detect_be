@@ -2,7 +2,7 @@ from flask import Flask
 from .models import db, bcrypt
 
 from .config import app_config
-from .views import user_api, custom_api, crime_api
+from .views import user_api, custom_api, crime_api, setting_api
 
 from flask_jwt_extended import (
     JWTManager
@@ -26,6 +26,7 @@ def create_app(env_name):
   app.register_blueprint(user_api, url_prefix='/users')
   app.register_blueprint(custom_api, url_prefix='/customs')
   app.register_blueprint(crime_api, url_prefix='/crimes')
+  app.register_blueprint(setting_api, url_prefix='/settings')
 
   @app.route('/', methods=['GET'])
   def index():

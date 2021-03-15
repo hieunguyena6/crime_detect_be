@@ -48,7 +48,6 @@ class UserModel(db.Model):
     db.session.commit()
 
   def update(self, data):
-    print(data)
     for key, item in data.items():
       if key == "password":
         setattr(self, key, self.__generate_hash(item))
