@@ -17,6 +17,7 @@ class UserModel(db.Model):
   email = db.Column(db.String(128), unique=True, nullable=True)
   organize = db.Column(db.String(128), nullable=False)
   password = db.Column(db.String(128), nullable=False)
+  phone = db.Column(db.String(20), nullable=True, default="123456789")
   is_disable = db.Column(db.Boolean, default=False, nullable=False)
   created_at = db.Column(db.DateTime, default=datetime.datetime.now())
   modified_at = db.Column(db.DateTime, default=datetime.datetime.now())
@@ -33,6 +34,7 @@ class UserModel(db.Model):
     self.organize = data.get('organize')
     self.role = data.get('role')
     self.is_disable = data.get('is_disable')
+    self.phone = data.get('phone_number')
     self.created_at = datetime.datetime.now()
     self.modified_at = datetime.datetime.now()
 
@@ -62,7 +64,7 @@ class UserModel(db.Model):
 
   @staticmethod
   def get_all_users(page, size, search = ''):
-    return db.session.query(*[c for c in UserModel.__table__.c if c.name != 'password']).filter(UserModel.email.ilike(f'%{search}%') | UserModel.user_name.ilike(f'%{search}%') | UserModel.name.ilike(f'%{search}%') ).order_by(UserModel.email.asc()).paginate(page, size, False)
+    return db.session.query(*[c for c in UserModel.__table__.c if c.name != 'password']).filter(UserModel.email.ilike(f'%{search}%') | UserModel.user_name.ilike(f'%{search}%') | UserModel.name.ilike(f'%{search}%') ).order_by(UserModel.id.desc()).paginate(page, size, False)
 
   @staticmethod
   def get_one_user(id):
@@ -90,5 +92,6 @@ class UserSchema(Schema):
   role = fields.Str(required=True)
   organize = fields.Str(required=True)
   is_disable = fields.Bool()
+  phone = fields.Str()
   created_at = fields.DateTime(dump_only=True)
   modified_at = fields.DateTime(dump_only=True)

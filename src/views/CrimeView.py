@@ -26,13 +26,13 @@ def create():
 
   try:
     data = crime_schema.load(req_data)
-  except ValidationError as err:
+  except Exception as err:
     return error_response(err, 200)
 
   try:
     new_crime = CrimeModel(data)
     new_crime.save()
-    return custom_response({})
+    return custom_response({"success": True})
   except Exception as e:
     return error_response(e, 200)
 
@@ -79,7 +79,7 @@ def delete_crime(crime_id):
 
 
 @crime_api.route('/check', methods=['POST'])
-@Auth.admin_required
+@Auth.staff_required
 def check():
   req_data = request.get_json() or {}
   if not("real_image" in req_data):
@@ -108,10 +108,10 @@ def check():
         'real_face': encode_image_base64(real_face),
         'face_image': crime.face_image,
         'name': crime.name,
-        'percent': similar_percent
+        'percent': round(similar_percent, 4)
       })
       new_log = {
-        'percent': similar_percent,
+        'percent': round(similar_percent, 4),
         'crime_id': crime.id,
         'time': datetime.now(),
         'image': image,
@@ -119,12 +119,10 @@ def check():
         'custom_id': 1
       }
       try:
-        print(new_log)
         # new_log = log_schema.load(new_log)
         new_log = LogModel(new_log)
         new_log.save()
       except Exception as e:
-        print(e)
         return error_response(str(e))
   similar_list.sort(key=lambda item:item['percent'], reverse=True)
   similar_list = similar_list[:10]

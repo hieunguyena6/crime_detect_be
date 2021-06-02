@@ -39,9 +39,26 @@ class Auth():
       user_id = get_jwt_identity()
       user = UserModel.get_one_user(user_id)
       if (user.is_disable):
-        return error_response("E108", 401)
+        return error_response("E108", 403)
       if (user.role != "admin"):
-        return error_response("E109", 401)
+        return error_response("E109", 403)
+      g.user = user
+      return fn(*args, **kwargs)
+    return wrapper
+
+  def staff_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+      try:
+        verify_jwt_in_request()
+      except Exception as e:
+        return error_response("E108", 401)
+      user_id = get_jwt_identity()
+      user = UserModel.get_one_user(user_id)
+      if (user.is_disable):
+        return error_response("E108", 403)
+      if (user.role != "staff"):
+        return error_response("E109", 403)
       g.user = user
       return fn(*args, **kwargs)
     return wrapper

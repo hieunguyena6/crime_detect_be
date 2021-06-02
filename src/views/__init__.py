@@ -5,8 +5,9 @@ def error_response(code, status_code = 200):
   res = {
     "success": False,
     "error_code": code if code in error_code else 400,
-    "message": error_code[code] if code in error_code else code
+    "message": error_code[code] if code in error_code else str(code)
   }
+  print(res)
   return Response(
     mimetype="application/json",
     response=json.dumps(res),
@@ -29,3 +30,4 @@ from .UserView import user_api
 from .CustomView import custom_api
 from .CrimeView import crime_api
 from .SettingView import setting_api
+from .LogView import log_api

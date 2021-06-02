@@ -15,7 +15,7 @@ class CrimeModel(db.Model):
   face_image = db.Column(db.String(1500000), nullable=False)
   face_embedding = db.Column(db.String(12000), nullable=False)
   is_wanted = db.Column(db.Boolean, nullable=False, default=True)
-  logs = db.relationship("LogModel", backref="crime", lazy='dynamic')
+  # logs = db.relationship("LogModel", backref="crime", lazy='dynamic')
   created_at = db.Column(db.DateTime, default=datetime.datetime.now())
   modified_at = db.Column(db.DateTime, default=datetime.datetime.now())
 
@@ -29,6 +29,7 @@ class CrimeModel(db.Model):
   def set_image(self, image):
     _image = decode_image_base64(image)
     faces = face_detector.find_faces(_image)
+    print(len(faces))
     if len(faces) != 1:
       raise ValueError('Face not found in image')
 
@@ -63,7 +64,7 @@ class CrimeModel(db.Model):
   @staticmethod
   def get_all_wanted_crime(page = None, size = None, search = ''):
     if (not page or not size):
-      return CrimeModel.query.filter(CrimeModel.name.ilike(f'%{search}%') & CrimeModel.is_wanted == True).order_by(CrimeModel.id.desc())
+      return CrimeModel.query.filter(CrimeModel.is_wanted == True).order_by(CrimeModel.id.desc())
     return CrimeModel.query.filter(CrimeModel.name.ilike(f'%{search}%') & CrimeModel.is_wanted == True).order_by(CrimeModel.id.desc()).paginate(page, size, False)
 
   @staticmethod

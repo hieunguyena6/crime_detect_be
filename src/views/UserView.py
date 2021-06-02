@@ -70,7 +70,7 @@ def login():
   return custom_response({'jwt_token': token, 'user': ser_data})
 
 @user_api.route('/', methods=['GET'])
-@Auth.jwt_required
+@Auth.admin_required
 def get_all():
   page = request.args.get('page') or 1
   size = request.args.get('size') or 5
@@ -94,8 +94,11 @@ def change_profile(user_id):
     if (not data):
       return error_response("E110")
     user_in_db.update(data)
+    user = UserModel.get_user_by_user_name(data.get('user_name'))
+    ser_data = user_schema.dump(user)
+    ser_data.pop("password", None)
     return custom_response({
-      "data": "success"
+      "user": ser_data
     })
   except Exception as e:
     return error_response(str(e))

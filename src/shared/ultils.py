@@ -22,9 +22,15 @@ def decode_image_base64(image_base64):
         except:
             raise ValueError('image_base64 does not contain data')
     try:
-        image = Image.open(io.BytesIO(base64.b64decode(image_base64)))
-        return fr.to_rgb(np.asarray(image))
+        image = Image.open(io.BytesIO(base64.b64decode(image_base64))) 
+        i = np.asarray(image)
+        # print("kk")
+        # print(i)
+        i = fr.to_rgb(np.asarray(image))
+        # print("lllllll")
+        return i
     except Exception as e:
+        print(e)
         raise ValueError('can not decode image')
 
 def encode_image_base64(np_img):

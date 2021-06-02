@@ -11,7 +11,6 @@ class CustomModel(db.Model):
   image = db.Column(db.String(1500000))
   created_at = db.Column(db.DateTime, default=datetime.datetime.now())
   modified_at = db.Column(db.DateTime, default=datetime.datetime.now())
-  logs = db.relationship("LogModel", backref="custom", lazy='dynamic')
 
   # class constructor
   def __init__(self, data):
