@@ -37,12 +37,12 @@ def create():
   # check if user already exist in the db
   user_in_db = UserModel.get_user_by_user_name(data.get('user_name'))
   if user_in_db:
-    message = {'error': 'User_name already exist, please supply another user name'}
-    return custom_response(message,False, 200)
+    message = 'User_name already exist, please supply another user name'
+    return error_response(message, 200)
   user_in_db = UserModel.get_user_by_email(data.get('email'))
   if data.get('email') and user_in_db:
-    message = {'error': 'Email already exist, please supply another email address'}
-    return custom_response(message,False, 200)
+    message = 'Email already exist, please supply another email address'
+    return error_response(message, 200)
   user = UserModel(data)
   user.save()
 

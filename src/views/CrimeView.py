@@ -37,7 +37,6 @@ def create():
     return error_response(e, 200)
 
 @crime_api.route('/', methods=['GET'])
-@Auth.admin_required
 def get_all():
   page = request.args.get('page') or 1
   size = request.args.get('size') or 5
@@ -52,7 +51,6 @@ def get_all():
   })
 
 @crime_api.route('/<int:crime_id>', methods=['GET'])
-@Auth.admin_required
 def get_crime(crime_id):
   try:
     crime = CrimeModel.get_one_crime(crime_id)
